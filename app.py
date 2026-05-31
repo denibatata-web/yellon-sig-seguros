@@ -2,7 +2,8 @@ import streamlit as st
 import re
 import uuid
 import time
-from langchain_community.document_loaders import PyPDFDirectoryLoader, DirectoryLoader
+import os
+from langchain_community.document_loaders import PyPDFDirectoryLoader, TextLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_community.vectorstores import Chroma
 from langchain_huggingface import HuggingFaceEmbeddings
@@ -60,16 +61,29 @@ def masquerar_dados(texto):
 @st.cache_resource
 def inicializar_banco_conhecimento():
     """
-    Carrega os documentos locais das pastas corporativas, realiza a fragmentação
-    semântica e persiste a indexação vetorial através do ChromaDB.
+    Carrega os documentos locais das pastas corporativas de forma leve,
+    realiza a fragmentação semântica e persiste a indexação vetorial.
     """
     try:
-        # Carga dos Manuais (docs/) e Perguntas Frequentes (faq/)
-        loader_pdf = PyPDFDirectoryLoader("docs/")
-        loader_faq = DirectoryLoader("faq/")
+        documentos = []
         
-        documentos = loader_pdf.load() + loader_faq.load()
+        # 1. Carrega os PDFs da pasta docs/
+        if os.path.exists("docs/"):
+            loader_pdf = PyPDFDirectoryLoader("docs/")
+            documentos.extend(loader_pdf.load())
+            
+        # 2. Carrega arquivos de texto (.txt) da pasta faq/ nativamente sem unstructured
+        if os.path.exists("faq/"):
+            for arquivo in os.listdir("faq/"):
+                if arquivo.endswith(".txt"):
+                    caminho_completo = os.path.join("faq/", arquivo)
+                    loader_txt = TextLoader(caminho_completo, encoding="utf-8")
+                    documentos.extend(loader_txt.load())
         
+        if not documentos:
+            st.error("Nenhum documento encontrado nas pastas docs/ ou faq/")
+            return None
+
         # Fragmentação Semântica (Chunking de 800 caracteres com overlap de 150)
         splitter = RecursiveCharacterTextSplitter(chunk_size=800, chunk_overlap=150)
         fragmentos = splitter.split_documents(documentos)
@@ -112,7 +126,7 @@ if vectorstore:
     ])
     history_aware_retriever = create_history_aware_retriever(llm, retriever, contextualize_q_prompt)
     
-   # Prompt do Sistema Administrador - Restrição de Escopo de Atendimento
+    # Prompt do Sistema Administrador - Restrição de Escopo utilizando Aspas Triplas Legítimas
     system_prompt = """Você é o assistente virtual inteligente e seguro da Yellon Sig Seguros.
 Use estritamente os seguintes pedaços de contexto recuperados para responder à pergunta.
 Se você não sabe a resposta ou se ela não estiver presente no contexto fornecido, diga de forma educada
@@ -122,3 +136,87 @@ Mantenha as respostas objetivas, profissionais e estritamente baseadas nos fatos
 
 Contexto recuperado:
 {context}"""
+
+    qa_prompt = ChatPromptTemplate.from_messages([
+        ("system", system_prompt),
+        MessagesPlaceholder("chat_history"),
+        ("human", "{input}"),
+    ])
+    question_answer_chain = create_stuff_documents_chain(llm, qa_prompt)
+    
+    # Consolidação da Cadeia RAG Completa
+    rag_chain = create_retrieval_chain(history_aware_retriever, question_answer_chain)
+
+# ==============================================================================
+# 🧠 GERENCIAMENTO DE ESTADO E FLUXO DA CONVERSA
+# ==============================================================================
+if "messages" not in st.session_state:
+    st.session_state.messages = []
+if "chat_history" not in st.session_state:
+    st.session_state.chat_history = []
+
+# Renderização do Histórico Visual no Chat
+for msg in st.session_state.messages:
+    with st.chat_message(msg["role"]):
+        st.markdown(msg["content"])
+
+# ==============================================================================
+# 💬 INTERAÇÃO COMPUTACIONAL EM TEMPO DE EXECUÇÃO
+# ==============================================================================
+if pergunta_usuario := st.chat_input("Digite sua dúvida sobre seguros..."):
+    
+    # 🔍 TESTE DE SEGURANÇA 1: Validação de Negação de Serviço por Volumetria (DoS)
+    if len(pergunta_usuario) > 800:
+        st.error("❌ Erro: O tamanho do payload excede o limite seguro de caracteres da aplicação.")
+        st.stop()
+        
+    # 🔍 TESTE DE SEGURANÇA 2: Validação de Tentativa de Prompt Injection
+    if detectar_prompt_injection(pergunta_usuario):
+        st.error("⚠️ Solicitação bloqueada por segurança. Padrão adversário detectado.")
+        st.stop()
+
+    # 🔍 TESTE DE SEGURANÇA 3: Higienização de Dados Pessoais (Mascaramento de PII)
+    pergunta_higienizada = masquerar_dados(pergunta_usuario)
+    
+    # Registrar entrada higienizada na tela
+    st.session_state.messages.append({"role": "user", "content": pergunta_higienizada})
+    with st.chat_message("user"):
+        st.markdown(pergunta_higienizada)
+
+    # Geração de Resposta via Pipeline RAG
+    if vectorstore:
+        with st.chat_message("assistant"):
+            mensagem_placeholder = st.empty()
+            mensagem_placeholder.markdown("🔍 *Consultando base de conhecimento segura...*")
+            
+            try:
+                # Execução da Cadeia RAG
+                resposta_objeto = rag_chain.invoke({
+                    "input": pergunta_higienizada, 
+                    "chat_history": st.session_state.chat_history
+                })
+                resposta_texto = resposta_objeto["answer"]
+                
+                # Exibição progressiva (Efeito de digitação)
+                resposta_gradual = ""
+                for caractere in resposta_texto:
+                    resposta_gradual += caractere
+                    mensagem_placeholder.markdown(resposta_gradual + "▌")
+                    time.sleep(0.005)
+                mensagem_placeholder.markdown(resposta_texto)
+                
+                # Identificador Único de Mensagem
+                msg_id = str(uuid.uuid4())
+                st.session_state.messages.append({"role": "assistant", "content": resposta_texto, "id": msg_id})
+                
+                # Atualização do histórico de contexto do LangChain
+                st.session_state.chat_history.extend([
+                    HumanMessage(content=pergunta_higienizada),
+                    AIMessage(content=resposta_texto)
+                ])
+                st.rerun()
+                
+            except Exception as e:
+                st.error(f"Desculpe, ocorreu um erro de processamento cognitivo local: {e}")
+    else:
+        st.error("O sistema está indisponível pois o banco vetorial não foi carregado corretamente.")
