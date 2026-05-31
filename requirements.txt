@@ -10,3 +10,4 @@ pypdf
 huggingface-hub
 sentence-transformers
 ollama==0.6.2
+unstructured
