@@ -1,0 +1,5 @@
+Cliente: Pedro Henrique Costa
+Apólice: 45678901
+Data: 18/04/2026
+Dúvida: O que está coberto no meu seguro residencial?
+Resolução: Explicadas as principais coberturas: incêndio, roubo, danos elétricos e responsabilidade civil. Cliente satisfeito.

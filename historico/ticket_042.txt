@@ -1,0 +1,5 @@
+Cliente: Rafael Mendes
+Apólice: 11223377
+Data: 27/06/2026
+Dúvida: Não recebi o boleto por e-mail este mês.
+Resolução: Reenviado boleto por e-mail e informado sobre portal do segurado.

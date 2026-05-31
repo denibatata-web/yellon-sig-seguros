@@ -1,0 +1,5 @@
+Cliente: Sandra Costa
+Apólice: 99881122
+Data: 23/06/2026
+Dúvida: Boleto venceu há 3 dias. Ainda posso pagar?
+Resolução: Enviado boleto atualizado com multa e juros. Cliente confirmou pagamento via PIX.

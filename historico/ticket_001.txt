@@ -1,0 +1,5 @@
+Cliente: João Silva
+Apólice: 78451239
+Data: 12/04/2026
+Dúvida: Como emitir segunda via do boleto de pagamento?
+Resolução: Informado link para segunda via no portal do segurado e enviado por e-mail. Cliente confirmou recebimento.

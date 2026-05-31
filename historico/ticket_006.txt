@@ -1,0 +1,5 @@
+Cliente: Juliana Ferreira
+Apólice: 11223344
+Data: 25/04/2026
+Dúvida: Meu boleto venceu ontem. Posso pagar com juros?
+Resolução: Informado que pode pagar com multa e juros via portal ou boleto atualizado. Enviado boleto atualizado.

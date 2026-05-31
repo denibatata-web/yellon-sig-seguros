@@ -1,0 +1,5 @@
+Cliente: Mariana Silva
+Apólice: 88990011
+Data: 28/06/2026
+Dúvida: Posso pagar o boleto via PIX?
+Resolução: Confirmado pagamento via PIX e enviado código.

@@ -1,0 +1,5 @@
+Cliente: Vanessa Lima
+Apólice: 66778899
+Data: 30/06/2026
+Dúvida: O boleto veio com valor errado.
+Resolução: Corrigido valor e enviado novo boleto.

@@ -1,0 +1,5 @@
+Cliente: Ana Costa | Apólice: 345678
+Data: 2024-05-18
+Assunto: Segunda via de boleto
+Resumo: Solicitou segunda via de boleto com vencimento próximo.
+Resolução: Boleto enviado por email em 1 hora.

@@ -1,0 +1,5 @@
+Cliente: Roberto Nunes
+Apólice: 22334466
+Data: 01/07/2026
+Dúvida: Posso cancelar antes do início da vigência?
+Resolução: Confirmado cancelamento sem custo, pois ainda não iniciou a vigência.

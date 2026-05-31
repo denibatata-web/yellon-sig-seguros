@@ -1,0 +1,5 @@
+Cliente: João Santos | Apólice: 234567
+Data: 2024-05-19
+Assunto: Sinistro de roubo
+Resumo: Apresentou reclamação sobre sinistro negado. Revisão feita - motivo foi exclusão contratual. Cliente recebeu explicação detalhada.
+Resolução: Processo finalizado conforme contrato.

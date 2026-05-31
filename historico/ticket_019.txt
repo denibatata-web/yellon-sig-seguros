@@ -1,0 +1,5 @@
+Cliente: Gustavo Ferreira Santos
+Apólice: 22337788
+Data: 27/05/2026
+Dúvida: Meu boleto não chegou por e-mail este mês.
+Resolução: Enviada segunda via do boleto atualizado. Cliente confirmou pagamento.

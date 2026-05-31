@@ -1,0 +1,5 @@
+Cliente: Maria Silva | Apólice: 123456
+Data: 2024-05-20
+Assunto: Dúvida sobre cobertura de incêndio
+Resumo: Cliente questionou se cobertura de incêndio inclui danos por explosão. Confirmado que sim, conforme apólice.
+Resolução: Enviado documento detalhado sobre coberturas.
