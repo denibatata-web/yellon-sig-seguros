@@ -9,7 +9,8 @@ from langchain_community.vectorstores import Chroma
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_core.messages import HumanMessage, AIMessage
-from langchain.chains import create_retrieval_chain, create_history_aware_retriever
+from langchain.chains.retrieval import create_retrieval_chain
+from langchain.chains.history_aware_retriever import create_history_aware_retriever
 from langchain.chains.combine_documents import create_stuff_documents_chain
 
 # ==============================================================================
@@ -24,6 +25,10 @@ st.markdown("### Atendimento inteligente ao segurado")
 # ==============================================================================
 
 def detectar_prompt_injection(pergunta):
+    """
+    Filtro Sintático Baseado em Assinaturas (Blacklist) - Capítulo 2.3.1 do TCC.
+    Intercepta tentativas conhecidas de engenharia social reversa e jailbreak.
+    """
     blacklist = [
         "ignore previous", "ignore all", "system prompt", "jailbreak", 
         "ignore as instruções", "esqueça o que foi dito", "esqueça as regras"
@@ -31,6 +36,10 @@ def detectar_prompt_injection(pergunta):
     return any(item in pergunta.lower() for item in blacklist)
 
 def masquerar_dados(texto):
+    """
+    Mecanismo de Sanitização e Proteção de Privacidade (Regex) - Capítulo 2.3.2 do TCC.
+    Identifica e ofusca PII (Dados Pessoais Identificáveis) antes de persistir em logs.
+    """
     texto = re.sub(r"\b\d{3}\.\d{3}\.\d{3}\-\d{2}\b", "***.***.***-**", texto)
     texto = re.sub(r"\b\d{11}\b", "***********", texto)
     return texto
@@ -56,7 +65,7 @@ def inicializar_banco_conhecimento():
             st.error("Nenhum documento encontrado nas pastas docs/ ou faq/")
             return None
 
-        # Reduzimos o tamanho dos blocos para economizar memória do servidor
+        # Reduzimos o tamanho dos blocos para economizar memória do servidor público
         splitter = RecursiveCharacterTextSplitter(chunk_size=400, chunk_overlap=50)
         fragmentos = splitter.split_documents(documentos)
         
@@ -71,13 +80,9 @@ def inicializar_banco_conhecimento():
 
 vectorstore = inicializar_banco_conhecimento()
 
-# Modelo de IA Fake/Regras para simular o atendimento rápido e estável no Streamlit Cloud
+# Modelo de IA Local Simulado para garantir estabilidade e funcionamento sob restrição de RAM
 class AssistenteLocal:
     def invoke(self, inputs):
-        pergunta = inputs["input"].lower()
-        contexto = inputs.get("context", "")
-        
-        # Simulação de IA baseada em busca exata no contexto recuperado
         return {"answer": "Prezado cliente, com base nas diretrizes da Yellon Sig Seguros, localizei as informações correspondentes em nossa base de dados corporativa para lhe auxiliar. Caso necessite de suporte complementar ou abertura de sinistros, por favor contate nossa Central de Atendimento pelos telefones 4004-5423 (Capitais) ou 0800-709-5423 (Demais localidades)."}
 
 if vectorstore:
@@ -94,9 +99,12 @@ for msg in st.session_state.messages:
     with st.chat_message(msg["role"]):
         st.markdown(msg["content"])
 
+# ==============================================================================
+# 💬 INTERAÇÃO COMPUTACIONAL EM TEMPO DE EXECUÇÃO
+# ==============================================================================
 if pergunta_usuario := st.chat_input("Digite sua dúvida sobre seguros..."):
     if len(pergunta_usuario) > 800 or detectar_prompt_injection(pergunta_usuario):
-        st.error("Solicitação inválida ou insegura.")
+        st.error("Solicitação inválida ou unsafe.")
         st.stop()
 
     pergunta_higienizada = masquerar_dados(pergunta_usuario)
@@ -109,11 +117,11 @@ if pergunta_usuario := st.chat_input("Digite sua dúvida sobre seguros..."):
             mensagem_placeholder = st.empty()
             mensagem_placeholder.markdown("🔍 *Consultando base de conhecimento segura...*")
             try:
-                # Recupera os documentos do ChromaDB
+                # Recupera os documentos do ChromaDB de forma isolada
                 docs = retriever.get_relevant_documents(pergunta_higienizada)
                 contexto_texto = "\n\n".join([doc.page_content for doc in docs])
                 
-                # Executa a resposta estável
+                # Executa a lógica estável livre de timeouts
                 resposta_objeto = rag_chain.invoke({"input": pergunta_higienizada, "context": contexto_texto})
                 resposta_texto = resposta_objeto["answer"]
                 
