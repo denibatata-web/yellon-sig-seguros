@@ -6,8 +6,7 @@ import os
 from langchain_community.document_loaders import PyPDFDirectoryLoader, TextLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_community.vectorstores import Chroma
-from langchain_huggingface import HuggingFaceEmbeddings
-from langchain_ollama import OllamaLLM
+from langchain_huggingface import HuggingFaceEmbeddings, HuggingFacePipeline
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_core.messages import HumanMessage, AIMessage
 from langchain_classic.chains import create_retrieval_chain, create_history_aware_retriever
@@ -109,8 +108,12 @@ if vectorstore:
     # Recuperador configurado para extrair as 6 partições mais semelhantes (k=6)
     retriever = vectorstore.as_retriever(search_kwargs={"k": 6})
     
-    # Modelo Cognitivo Local Llama 3.1 hospedado via servidor Ollama (Temp = 0.1)
-    llm = OllamaLLM(model="llama3.1:8b", temperature=0.1)
+    # 🤗 LLM Público: Modelo estável que roda direto na nuvem sem precisar de chaves/tokens
+    llm = HuggingFacePipeline.from_model_id(
+        model_id="HuggingFaceH4/zephyr-7b-beta",
+        task="text-generation",
+        pipeline_kwargs={"max_new_tokens": 512, "temperature": 0.1}
+    )
     
     # Engenharia de Prompts - Retenção e Contextualização do Histórico
     contextualize_q_system_prompt = (
