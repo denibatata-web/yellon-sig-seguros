@@ -6,7 +6,7 @@ import os
 from langchain_community.document_loaders import PyPDFDirectoryLoader, TextLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_community.vectorstores import Chroma
-from langchain_huggingface import HuggingFaceEmbeddings, HuggingFaceEndpoint
+from langchain_huggingface import HuggingFaceEmbeddings, HuggingFacePipeline
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_core.messages import HumanMessage, AIMessage
 from langchain.chains import create_retrieval_chain, create_history_aware_retriever
@@ -24,32 +24,15 @@ st.markdown("### Atendimento inteligente ao segurado")
 # ==============================================================================
 
 def detectar_prompt_injection(pergunta):
-    """
-    Filtro Sintático Baseado em Assinaturas (Blacklist) - Capítulo 2.3.1 do TCC.
-    Intercepta tentativas conhecidas de engenharia social reversa e jailbreak.
-    """
     blacklist = [
-        "ignore previous", 
-        "ignore all", 
-        "system prompt", 
-        "jailbreak", 
-        "ignore as instruções", 
-        "esqueça o que foi dito",
-        "esqueça as regras"
+        "ignore previous", "ignore all", "system prompt", "jailbreak", 
+        "ignore as instruções", "esqueça o que foi dito", "esqueça as regras"
     ]
     return any(item in pergunta.lower() for item in blacklist)
 
-
 def masquerar_dados(texto):
-    """
-    Mecanismo de Sanitização e Proteção de Privacidade (Regex) - Capítulo 2.3.2 do TCC.
-    Identifica e ofusca PII (Dados Pessoais Identificáveis) antes de persistir em logs.
-    """
-    # Mascarar CPF no formato XXX.XXX.XXX-XX ou sequências de 11 dígitos
     texto = re.sub(r"\b\d{3}\.\d{3}\.\d{3}\-\d{2}\b", "***.***.***-**", texto)
     texto = re.sub(r"\b\d{11}\b", "***********", texto)
-    
-    # Mascarar CNPJ no formato XX.XXX.XXX/XXXX-XX
     texto = re.sub(r"\b\d{2}\.\d{3}\.\d{3}/\d{4}\-\d{2}\b", "**.***.***/****-**", texto)
     return texto
 
@@ -59,10 +42,6 @@ def masquerar_dados(texto):
 
 @st.cache_resource
 def inicializar_banco_conhecimento():
-    """
-    Carrega os documentos locais das pastas corporativas de forma leve,
-    realiza a fragmentação semântica e persiste a indexação vetorial.
-    """
     try:
         documentos = []
         if os.path.exists("docs/"):
@@ -78,11 +57,9 @@ def inicializar_banco_conhecimento():
             st.error("Nenhum documento encontrado nas pastas docs/ ou faq/")
             return None
 
-        # Fragmentação Semântica (Chunking leve)
         splitter = RecursiveCharacterTextSplitter(chunk_size=600, chunk_overlap=100)
         fragmentos = splitter.split_documents(documentos)
         
-        # Modelo de Embeddings leve e multilíngue
         embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
         
         vectorstore = Chroma.from_documents(documents=fragmentos, embedding=embeddings, persist_directory="./db")
@@ -96,11 +73,11 @@ vectorstore = inicializar_banco_conhecimento()
 if vectorstore:
     retriever = vectorstore.as_retriever(search_kwargs={"k": 3})
     
-    # LLM via API pública externa (Roda na nuvem, livre de erros de RAM local)
-    llm = HuggingFaceEndpoint(
-        repo_id="HuggingFaceH4/zephyr-7b-beta",
+    # 🌟 MODELO PÚBLICO DIRETO: Roda nativamente sem exigir tokens ou chaves de API
+    llm = HuggingFacePipeline.from_model_id(
+        model_id="HuggingFaceH4/zephyr-7b-beta",
         task="text-generation",
-        model_kwargs={"max_new_tokens": 512, "temperature": 0.1}
+        pipeline_kwargs={"max_new_tokens": 512, "temperature": 0.1}
     )
     
     contextualize_q_system_prompt = (
