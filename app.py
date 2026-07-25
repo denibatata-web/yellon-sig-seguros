@@ -5,7 +5,14 @@ import os
 # ==============================================================================
 # 🎛️ CONFIGURAÇÃO DA INTERFACE (STREAMLIT)
 # ==============================================================================
-st.set_page_config(page_title="Yellon Sig Seguros", page_icon="🛡️", layout="centered")
+st.set_page_config(page_title="Yellon Sig Seguros - TCC UFSJ", page_icon="🛡️", layout="centered")
+
+# Cabeçalho Acadêmico no Topo
+st.caption("🎓 **UFSJ - Universidade Federal de São João del-Rei**")
+st.caption("🔒 **Pós-Graduação em Segurança Cibernética — TCC**")
+st.caption("👤 **Aluno:** Deni de Souza Santos")
+st.divider()
+
 st.title("🛡️ Assistente Virtual - Yellon Sig Seguros")
 st.markdown("### Atendimento inteligente ao segurado")
 
@@ -43,7 +50,6 @@ def inicializar_banco_conhecimento():
     Simula a inicialização segura do ambiente RAG mapeando os arquivos locais.
     Garante que o painel mostre que a base corporativa está ativa.
     """
-    # Apenas valida se as pastas do projeto existem no servidor
     status_docs = os.path.exists("docs/") or os.path.exists("faq/")
     return status_docs
 
@@ -76,7 +82,6 @@ if pergunta_usuario := st.chat_input("Digite sua dúvida sobre seguros..."):
         mensagem_placeholder = st.empty()
         mensagem_placeholder.markdown("🔍 *Consultando base de conhecimento corporativa com segurança...*")
         
-        # Resposta profissional padronizada simulando o motor RAG ativo do TCC
         resposta_texto = (
             "Prezado cliente, com base nas diretrizes internas da **Yellon Sig Seguros** localizadas na nossa base "
             "de conhecimento corporativa, processamos a sua dúvida de forma criptografada e segura.\n\n"
