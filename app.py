@@ -10,6 +10,7 @@ st.set_page_config(page_title="Yellon Sig Seguros - TCC UFSJ", page_icon="🛡�
 # Cabeçalho Acadêmico no Topo
 st.caption("🎓 **UFSJ - Universidade Federal de São João del-Rei**")
 st.caption("🔒 **Pós-Graduação em Segurança Cibernética — TCC**")
+st.caption("👨‍🏫 **Orientador:** Professor Alex Vidigal Bastos")
 st.caption("👤 **Aluno:** Deni de Souza Santos")
 st.divider()
 
@@ -70,27 +71,4 @@ for msg in st.session_state.messages:
 # ==============================================================================
 if pergunta_usuario := st.chat_input("Digite sua dúvida sobre seguros..."):
     if len(pergunta_usuario) > 800 or detectar_prompt_injection(pergunta_usuario):
-        st.error("Solicitação inválida ou insegura (Detecção de Risco Ativa).")
-        st.stop()
-
-    pergunta_higienizada = masquerar_dados(pergunta_usuario)
-    st.session_state.messages.append({"role": "user", "content": pergunta_higienizada})
-    with st.chat_message("user"):
-        st.markdown(pergunta_higienizada)
-
-    with st.chat_message("assistant"):
-        mensagem_placeholder = st.empty()
-        mensagem_placeholder.markdown("🔍 *Consultando base de conhecimento corporativa com segurança...*")
-        
-        resposta_texto = (
-            "Prezado cliente, com base nas diretrizes internas da **Yellon Sig Seguros** localizadas na nossa base "
-            "de conhecimento corporativa, processamos a sua dúvida de forma criptografada e segura.\n\n"
-            "Para dar andamento imediato com a abertura de sinistros, alteração de apólice ou consultas sobre coberturas, "
-            "por favor contate a nossa Central de Atendimento Homologada pelos telefones:\n"
-            "📞 **4004-5423** (Capitais e Regiões Metropolitanas)\n"
-            "📞 **0800-709-5423** (Demais localidades)"
-        )
-        
-        mensagem_placeholder.markdown(resposta_texto)
-        st.session_state.messages.append({"role": "assistant", "content": resposta_texto})
-        st.rerun()
+        st.
