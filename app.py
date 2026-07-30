@@ -10,6 +10,7 @@ st.set_page_config(page_title="Yellon Sig Seguros - TCC UFSJ", page_icon="🛡�
 # Cabeçalho Acadêmico no Topo
 st.caption("🎓 **UFSJ - Universidade Federal de São João del-Rei**")
 st.caption("🔒 **Pós-Graduação em Segurança Cibernética — TCC**")
+st.caption("👨‍🏫 **Orientador:** Professor Alex Vidigal Bastos")
 st.caption("👤 **Aluno:** Deni de Souza Santos")
 st.divider()
 
